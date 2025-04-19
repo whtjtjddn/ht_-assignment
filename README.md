@@ -1,29 +1,30 @@
-# hanteo_project
+# HT Project
 
-This template should help get you started developing with Vue 3 in Vite.
+## Build Setup
 
-## Recommended IDE Setup
+```bash
+# install dependencies
+$ yarn install
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+# serve with hot reload at localhost:3000
+$ yarn dev
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+# build for production and launch server
+$ yarn build
+$ yarn start
 ```
 
-### Compile and Hot-Reload for Development
+## For Developers
+Before starting to develop, you should set up your environments.
 
-```sh
-npm run dev
+`pre-commit`
+```
+$ brew install pre-commit
+$ pre-commit install --hook-type pre-commit
 ```
 
-### Compile and Minify for Production
-
-```sh
-npm run build
+`Work with Clickup`:
 ```
+$ git commit -m "Fix: #3eh7dd4[status]"
+```
+> status: [OPEN|IN PROGRESS|COMPLETE]
