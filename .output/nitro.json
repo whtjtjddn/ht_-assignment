@@ -1,0 +1,25 @@
+{
+  "date": "2025-04-19T08:13:21.374Z",
+  "preset": "firebase",
+  "framework": {
+    "name": "nuxt",
+    "version": "3.16.2"
+  },
+  "versions": {
+    "nitro": "2.11.9"
+  },
+  "commands": {
+    "deploy": "npx firebase-tools deploy"
+  },
+  "config": {
+    "firebase": {
+      "gen": 2,
+      "nodeVersion": "18",
+      "serverFunctionName": "server",
+      "httpsOptions": {
+        "region": "asia-northeast3",
+        "memory": "1GiB"
+      }
+    }
+  }
+}

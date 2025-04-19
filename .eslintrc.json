@@ -1,0 +1,25 @@
+{
+    "root": true,
+    "parserOptions": {
+        "parser": "@typescript-eslint/parser",
+        "requireConfigFile": false,
+        "babelOptions": {
+            "babelrc": false,
+            "configFile": false,
+            // your babel options
+            "presets": ["@babel/preset-env", "@nuxt/babel-preset-app", "@babel/preset-typescript"]
+        }
+    },
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "node": true
+    },
+    "ignorePatterns": ["node_modules/*", "dist/*", "!.prettierrc.js", "yarn.lock", ".eslintrc.json"],
+    "extends": ["plugin:nuxt/recommended", "plugin:vue/vue3-recommended", "plugin:prettier/recommended"],
+    "plugins": ["vue", "prettier", "@typescript-eslint"],
+    "rules": {
+        "prettier/prettier": ["error", {}],
+        "vue/multi-word-component-names": "off"
+    }
+}
