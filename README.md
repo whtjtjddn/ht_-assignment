@@ -22,9 +22,3 @@ Before starting to develop, you should set up your environments.
 $ brew install pre-commit
 $ pre-commit install --hook-type pre-commit
 ```
-
-`Work with Clickup`:
-```
-$ git commit -m "Fix: #3eh7dd4[status]"
-```
-> status: [OPEN|IN PROGRESS|COMPLETE]
