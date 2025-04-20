@@ -5,6 +5,7 @@
             <component :is="categoryViews[selectedCategory.id]" />
         </KeepAlive>
     </div>
+    <img v-if="showSwipeIcon" src="../../assets/icon/img-swipe.png" alt="swipe-icon" class="swipe-icon" @animationend="showSwipeIcon = false" />
     <UpperFooter v-if="showFooter" />
 </template>
 
@@ -38,6 +39,7 @@ export default {
             } as Record<string, any>,
             touchStartX: 0,
             touchEndX: 0,
+            showSwipeIcon: true,
             showFooter: false
         }
     },
@@ -64,6 +66,7 @@ export default {
             this.touchEndX = event.touches[0].clientX
         },
         handleTouchEnd() {
+            this.showSwipeIcon = false
             if (this.touchStartX - this.touchEndX > 50) {
                 // left swipe
                 this.moveToNextCategory()
@@ -98,5 +101,28 @@ export default {
 <style scoped>
 .category-swipe-area {
     height: 100%;
+}
+
+.swipe-icon {
+    pointer-events: none;
+    position: absolute;
+    top: 320px;
+    right: 12px;
+    width: 120px;
+    height: 120px;
+    opacity: 0.7;
+    animation: swipeMove 2s ease-in-out 4 alternate forwards;
+}
+
+@keyframes swipeMove {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-20px);
+    }
+    100% {
+        transform: translateX(0);
+    }
 }
 </style>

@@ -15,6 +15,12 @@ export default defineNuxtConfig({
         }
     },
 
+    routeRules: {
+        "/": {
+            redirect: "/main"
+        }
+    },
+
     typescript: {
         typeCheck: false
     },
