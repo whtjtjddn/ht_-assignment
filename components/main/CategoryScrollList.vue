@@ -1,6 +1,6 @@
 <template>
     <div class="category-scroll-list">
-        <div class="category-scroll-list__container">
+        <div class="category-scroll-list-container">
             <div
                 v-for="(category, index) in categoryList"
                 :key="index"
@@ -53,21 +53,21 @@ export default defineComponent({
     width: 100%;
     overflow-x: auto;
     white-space: nowrap;
-    background-color: #f1f1f1;
-    border-bottom: 1px solid #e8eaee;
-    padding: 8px 0;
+    background-color: #fde7e7;
+    padding: 12px 0;
 
     &::-webkit-scrollbar {
         display: none;
     }
 }
-.category-scroll-list__container {
+.category-scroll-list-container {
     display: flex;
     width: 100%;
-    gap: 24px;
+    gap: 32px;
 }
 
 .category-text {
+    font-size: 18px;
     color: #6b7180;
 
     &:first-child {

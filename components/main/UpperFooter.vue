@@ -1,6 +1,6 @@
 <template>
     <div class="upper-footer" @click="goToTop">
-        <img src="../../assets/icon/icon-up-arrow-fill.svg" alt="up-icon" width="24px" height="24px" />
+        <img src="../../assets/icon/icon-up-arrow-fill.svg" alt="up-icon" width="20px" height="20px" />
     </div>
 </template>
 

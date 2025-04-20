@@ -1,8 +1,6 @@
 <template>
     <div class="chart-view">
-        <div class="mt-5 mb-4">
-            <BannerSlider :banners="bannerList" />
-        </div>
+        <CarouselSlider class="mt-5 mb-4" :banners="bannerList" />
         <div class="content-list">
             <div class="text-2xl font-bold mb-2">Content List</div>
             <ContentTile v-for="(content, index) in contentList" :key="index" :content-info="content" />
@@ -15,11 +13,11 @@ import { Content } from "../../../models/content"
 import ContentUtil from "../../../utils/content"
 import ContentTile from "../../../components/main/ContentTile.vue"
 import { Banner } from "../../../models/banner"
-import BannerSlider from "../../../components/main/BannerSlider.vue"
+import CarouselSlider from "../../../components/main/CarouselSlider.vue"
 
 export default {
     name: "ChartView",
-    components: { BannerSlider, ContentTile },
+    components: { CarouselSlider, ContentTile },
     data() {
         return {
             contentList: [] as Content[],

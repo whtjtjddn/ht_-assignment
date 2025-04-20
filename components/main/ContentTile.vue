@@ -1,7 +1,7 @@
 <template>
-    <div class="content__tile">
+    <div class="content-tile">
         <img :src="contentInfo.imageUrl" alt="Tile Image" />
-        <div class="content__text">
+        <div class="content-text">
             <span class="title">{{ contentInfo.title }}</span>
             <span class="description">{{ contentInfo.description }}</span>
         </div>
@@ -16,16 +16,16 @@ export default {
     name: "ContentTile",
     props: {
         contentInfo: {
-            type: Object as PropType<Content | null>,
+            type: Object as PropType<Content>,
             required: true,
-            default: null
+            default: {} as Content
         }
     }
 }
 </script>
 
 <style scoped>
-.content__tile {
+.content-tile {
     display: flex;
     flex-direction: row;
     padding: 8px 12px;
@@ -37,7 +37,7 @@ export default {
     border: 1px solid #e8eaee;
     gap: 8px;
 
-    .content__text {
+    .content-text {
         display: flex;
         flex-direction: column;
         .title {
@@ -60,7 +60,7 @@ export default {
     }
 }
 
-.content__tile:hover {
+.content-tile:hover {
     background-color: #f7f8f9;
     cursor: pointer;
 }
