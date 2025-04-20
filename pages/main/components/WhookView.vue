@@ -1,7 +1,9 @@
 <script setup></script>
 
 <template>
-    <div>I'm Whook view</div>
+    <div class="absolute inset-0 flex items-center justify-center text-center">
+        <span> This is a placeholder for the WhookView component. </span>
+    </div>
 </template>
 
 <style scoped></style>

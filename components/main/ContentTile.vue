@@ -32,14 +32,16 @@ export default {
     border-radius: 8px;
     background-color: white;
     justify-content: start;
-    align-items: center;
+    align-items: start;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     border: 1px solid #e8eaee;
-    gap: 8px;
+    gap: 16px;
 
     .content-text {
         display: flex;
         flex-direction: column;
+        justify-content: start;
+        align-items: start;
         .title {
             font-size: 16px;
             font-weight: bold;
@@ -55,8 +57,13 @@ export default {
     img {
         width: 50px;
         height: 50px;
-        border-radius: 50%;
+        border-radius: 12px;
         border: 1px solid #e8eaee;
+
+        @media (min-width: 768px) {
+            width: 120px;
+            height: 120px;
+        }
     }
 }
 

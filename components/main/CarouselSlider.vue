@@ -1,5 +1,5 @@
 <template>
-    <div class="carousel-container" @touchstart.stop="onTouchStart" @touchmove.stop="onTouchMove" @touchend.stop="onTouchEnd">
+    <div class="carousel-container" @touchstart.stop="onTouchStart" @touchmove.stop="onTouchMove" @touchend.stop="onTouchEnd" @onmousedown.stop="onTouchStart">
         <div class="carousel-track" :style="trackStyle" @transitionend="onTransitionEnd">
             <div
                 v-for="(item, idx) in loopedBanners"

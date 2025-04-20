@@ -52,6 +52,10 @@ export default {
         height: 160px;
         object-fit: cover;
         border-radius: 12px 12px 0 0;
+
+        @media (min-width: 768px) {
+            height: 240px;
+        }
     }
 
     .open-badge {
