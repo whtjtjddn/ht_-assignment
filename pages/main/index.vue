@@ -18,8 +18,8 @@ import EventView from "./components/EventView.vue"
 import StoreView from "./components/StoreView.vue"
 import ChargeView from "./components/ChargeView.vue"
 import NewsView from "./components/NewsView.vue"
-import CategoryScrollList from "../../components/main/CategoryScrollList.vue"
-import UpperFooter from "../../components/main/UpperFooter.vue"
+import CategoryScrollList from "../../components/common/CategoryScrollList.vue"
+import UpperFooter from "../../components/common/UpperFooter.vue"
 
 export default {
     name: "MainContent",

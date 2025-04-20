@@ -17,7 +17,7 @@ export default defineNuxtConfig({
 
     routeRules: {
         "/": {
-            redirect: "/main"
+            redirect: "/common"
         }
     },
 

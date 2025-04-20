@@ -16,9 +16,9 @@
 <script lang="ts">
 import { Content } from "../../../models/content"
 import ContentUtil from "../../../utils/content"
-import ContentTile from "../../../components/main/ContentTile.vue"
+import ContentTile from "../../../components/common/ContentTile.vue"
 import { Banner } from "../../../models/banner"
-import CarouselSlider from "../../../components/main/CarouselSlider.vue"
+import CarouselSlider from "../../../components/common/CarouselSlider.vue"
 
 export default {
     name: "ChartView",
