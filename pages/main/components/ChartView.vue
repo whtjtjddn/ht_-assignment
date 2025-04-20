@@ -5,10 +5,10 @@
             <template v-if="contentList.length === 0">
                 <div class="text-center text-m">No Content Available</div>
             </template>
-            <div v-else class="text-start">
-                <div class="text-xl font-bold mb-4">Content List</div>
+            <template v-else>
+                <div class="text-start text-xl font-bold">Content List</div>
                 <ContentTile v-for="(content, index) in contentList" :key="index" :content-info="content" />
-            </div>
+            </template>
         </div>
     </div>
 </template>
