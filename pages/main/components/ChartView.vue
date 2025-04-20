@@ -21,16 +21,38 @@ export default {
     data() {
         return {
             contentList: [] as Content[],
-            bannerList: [] as Banner[]
+            bannerList: [] as Banner[],
+            isLoading: false,
+            currentPage: 1,
+            totalPage: 10
         }
     },
     mounted() {
         this.initialContentList()
+        this.$nextTick(() => {
+            window.addEventListener("scroll", this.handleScroll)
+        })
     },
     methods: {
         initialContentList() {
-            this.contentList = ContentUtil.getContentList()
+            this.contentList = ContentUtil.getContentList(1, 20)
             this.bannerList = ContentUtil.getBannerList()
+        },
+        fetchNextPage() {
+            const nextPageContent = ContentUtil.getContentList(this.currentPage, 20)
+            this.contentList.push(...nextPageContent)
+        },
+        handleScroll() {
+            const scrollTop = window.scrollY
+            const windowHeight = window.innerHeight
+            const documentHeight = document.documentElement.scrollHeight
+
+            if (scrollTop + windowHeight >= documentHeight - 100 && !this.isLoading && this.currentPage < this.totalPage) {
+                this.isLoading = true
+                this.currentPage++
+                this.fetchNextPage()
+                this.isLoading = false
+            }
         }
     }
 }

@@ -1,8 +1,8 @@
 <template>
     <CategoryScrollList :on-tap-category="onTapCategory" :category-list="categoryList" :selected-category="selectedCategory" />
     <div class="category-swipe-area" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
-        <KeepAlive>
-            <component :is="categoryViews[selectedCategory?.id]" />
+        <KeepAlive v-if="selectedCategory">
+            <component :is="categoryViews[selectedCategory.id]" />
         </KeepAlive>
     </div>
     <UpperFooter v-if="showFooter" />
