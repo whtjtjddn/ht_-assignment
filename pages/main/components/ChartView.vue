@@ -2,8 +2,13 @@
     <div class="chart-view">
         <CarouselSlider class="mt-5 mb-4" :banners="bannerList" />
         <div class="content-list">
-            <div class="text-2xl font-bold mb-2">Content List</div>
-            <ContentTile v-for="(content, index) in contentList" :key="index" :content-info="content" />
+            <template v-if="contentList.length === 0">
+                <div class="text-center text-m">No Content Available</div>
+            </template>
+            <div v-else class="text-start">
+                <div class="text-xl font-bold mb-4">Content List</div>
+                <ContentTile v-for="(content, index) in contentList" :key="index" :content-info="content" />
+            </div>
         </div>
     </div>
 </template>
@@ -64,14 +69,6 @@ export default {
     flex-direction: column;
     align-items: center;
 
-    .banner-list {
-        display: flex;
-        flex-direction: row;
-        width: -webkit-fill-available;
-        gap: 20px;
-        justify-content: center;
-    }
-
     .content-list {
         display: flex;
         flex-direction: column;
@@ -79,6 +76,7 @@ export default {
         background-color: #f7f8f9;
         gap: 12px;
         justify-content: center;
+        min-height: 55vh;
         padding: 20px 20px 80px;
     }
 }
