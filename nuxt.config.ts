@@ -1,15 +1,29 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import eslintPlugin from "vite-plugin-eslint"
+import path from "path"
 
 export default defineNuxtConfig({
     devtools: { enabled: true },
-
+    nitro: {
+        preset: "firebase",
+        firebase: {
+            nodeVersion: "18",
+            gen: 2,
+            serverFunctionName: "server",
+            httpsOptions: {
+                region: "asia-northeast3",
+                memory: "1GiB"
+            }
+        }
+    },
     vite: {
         plugins: [eslintPlugin()],
         css: {
             preprocessorOptions: {
                 scss: {
-                    additionalData: '@use "~/assets/style/index.scss" as *;'
+                    additionalData: `
+                        @use "~/assets/style/index.scss" as *;
+                        `
                 }
             }
         }
