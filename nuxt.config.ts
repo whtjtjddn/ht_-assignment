@@ -9,7 +9,7 @@ export default defineNuxtConfig({
         firebase: {
             nodeVersion: "18",
             gen: 2,
-            serverFunctionName: "server",
+            serverFunctionName: "functions",
             httpsOptions: {
                 region: "asia-northeast3",
                 memory: "1GiB"
