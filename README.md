@@ -1,4 +1,4 @@
-# HT Project
+# Subway Roulette Project
 
 ## Build Setup
 
@@ -12,13 +12,4 @@ $ yarn dev
 # build for production and launch server
 $ yarn build
 $ yarn start
-```
-
-## For Developers
-Before starting to develop, you should set up your environments.
-
-`pre-commit`
-```
-$ brew install pre-commit
-$ pre-commit install --hook-type pre-commit
 ```
