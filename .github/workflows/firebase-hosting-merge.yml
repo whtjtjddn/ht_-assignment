@@ -32,7 +32,7 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SEOUL_SUBWAY_ROULETTE }}
       - name: Deploy with Force Cleanup Policy
         run: |
-          npx firebase-tools deploy --only hosting --force
+          npx firebase-tools deploy --only functions:server,hosting --force
           npx firebase-tools functions:artifacts:setpolicy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
