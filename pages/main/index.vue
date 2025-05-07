@@ -1,128 +1,273 @@
 <template>
-    <CategoryScrollList :on-tap-category="onTapCategory" :category-list="categoryList" :selected-category="selectedCategory" />
-    <div class="category-swipe-area" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
-        <KeepAlive v-if="selectedCategory">
-            <component :is="categoryViews[selectedCategory.id]" />
-        </KeepAlive>
+    <div class="min-h-screen flex bg-gray-900 relative">
+        <!-- 드로어 -->
+        <transition name="drawer">
+            <aside v-if="isDrawerOpen" class="fixed inset-y-0 left-0 w-72 bg-white p-6 shadow-2xl space-y-8 z-50 flex flex-col">
+                <h2 class="text-2xl font-bold">🛠 필터</h2>
+
+                <!-- 지역 필터 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">지역</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="region in regionList"
+                            :key="region"
+                            :class="selectedRegions.includes(region) ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'"
+                            class="px-4 py-2 rounded-full transition"
+                            @click="toggleRegion(region)"
+                        >
+                            {{ region }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 호선 필터 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">호선</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="line in availableLines"
+                            :key="line"
+                            class="px-4 py-2 rounded-full transition border"
+                            :style="
+                                selectedLines.includes(line)
+                                    ? { backgroundColor: lineColors[line], color: '#ffffff' }
+                                    : { borderColor: lineColors[line], color: lineColors[line], backgroundColor: '#ffffff' }
+                            "
+                            @click="toggleLine(line)"
+                        >
+                            {{ line }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 초기화 / 적용 -->
+                <div class="mt-auto flex justify-between pt-4 border-t">
+                    <button class="text-sm text-red-500 hover:underline" @click="resetFilters">초기화</button>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition" @click="applyFilters">적용</button>
+                </div>
+            </aside>
+        </transition>
+
+        <!-- 메인 슬롯 머신 -->
+        <div class="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
+            <h1 class="text-2xl font-extrabold text-gray-200">🎰 랜덤 지하철 여행 🎰</h1>
+
+            <!-- 최근 뽑은 역 히스토리 -->
+            <div v-if="spinHistory.length" class="flex flex-wrap justify-center gap-2">
+                <span v-for="(h, i) in spinHistory" :key="i" class="flex flex-row gap-1 p-2 rounded-lg text-white text-sm" :style="{ backgroundColor: h.color }">
+                    <span class="flex rounded-full w-5 h-5 border-2 border-gray-200 bg-white text-black justify-center items-center">{{ h.line.substring(0, 1) }}</span>
+                    {{ h.name }}
+                </span>
+            </div>
+
+            <!-- 슬롯창 배경 이미지 + 회전 영역 -->
+            <div
+                ref="containerRef"
+                class="relative overflow-hidden h-16 w-64 rounded-lg"
+                :style="{
+                    border: `1.5px solid #f7f8f9`
+                }"
+            >
+                <ul ref="reelRef" class="relative rounded-lg will-change-transform">
+                    <li
+                        v-for="(station, i) in reelStations"
+                        :key="i"
+                        class="h-16 rounded-lg flex items-center justify-center font-semibold shadow-md"
+                        :style="{ backgroundColor: station.color, color: '#ffffff' }"
+                    >
+                        {{ station.name }}
+                    </li>
+                </ul>
+                <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 pointer-events-none"></div>
+            </div>
+
+            <!-- 뽑기 버튼 -->
+            <button
+                :disabled="spinning || filteredStations.length === 0"
+                class="w-64 py-3 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold rounded-lg shadow-lg transition-colors disabled:opacity-50"
+                @click="spin"
+            >
+                {{ spinning ? "돌리는 중…" : "오늘은 어디로 가볼까요?" }}
+            </button>
+
+            <!-- 결과 및 팁 -->
+            <div class="space-y-2 text-center">
+                <p v-if="filteredStations.length === 0" class="text-red-500">⚠️ 하나 이상의 지역·호선을 선택해주세요.</p>
+                <p v-if="selectedStation" class="text-lg font-bold" :style="{ color: selectedStation.color }">🎉 선택된 역: {{ selectedStation.name }}</p>
+                <!-- 랜덤 팁 박스 -->
+                <div v-if="selectedStation && tips[selectedStation.name]" class="mt-2 p-2 bg-white rounded-md shadow-inner">💡 {{ tips[selectedStation.name] }}</div>
+            </div>
+        </div>
+
+        <!-- 플로팅 버튼 -->
+        <button
+            class="fixed bottom-6 right-6 w-12 h-12 bg-yellow-400 hover:bg-yellow-500 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-50"
+            @click="toggleDrawer"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 019 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
+                />
+            </svg>
+        </button>
     </div>
-    <img v-if="showSwipeIcon" src="../../assets/icon/img-swipe.png" alt="swipe-icon" class="swipe-icon" @animationend="showSwipeIcon = false" />
-    <UpperFooter v-if="showFooter" />
 </template>
 
-<script lang="ts">
-import { Category } from "../../models/category"
-import CategoryUtil from "../../utils/category"
-import ChartView from "./components/ChartView.vue"
-import WhookView from "./components/WhookView.vue"
-import EventView from "./components/EventView.vue"
-import StoreView from "./components/StoreView.vue"
-import ChargeView from "./components/ChargeView.vue"
-import NewsView from "./components/NewsView.vue"
-import CategoryScrollList from "../../components/common/CategoryScrollList.vue"
-import UpperFooter from "../../components/common/UpperFooter.vue"
+<script setup lang="ts">
+import { ref, computed, watch } from "vue"
+import SubwayUtil from "../../utils/content"
+import { SubwayStation } from "../../models/content"
 
-export default {
-    name: "MainContent",
-    components: { UpperFooter, CategoryScrollList },
-    data() {
-        return {
-            categoryList: [] as Category[],
-            selectedCategory: null as Category,
-            categoryViews: {
-                CHART: ChartView,
-                WHOOK: WhookView,
-                EVENT: EventView,
-                NEWS: NewsView,
-                STORE: StoreView,
-                CHARGE: ChargeView
-                // add more categories here
-            } as Record<string, any>,
-            touchStartX: 0,
-            touchEndX: 0,
-            showSwipeIcon: true,
-            showFooter: false
-        }
-    },
-    mounted() {
-        this.initialCategoryList()
-        addEventListener("scroll", this.handleFooter)
-    },
-    unmounted() {
-        removeEventListener("scroll", this.handleFooter)
-    },
-    methods: {
-        initialCategoryList() {
-            this.categoryList = CategoryUtil.getCategories()
-            // 처음 selected 는 첫번째로 고정
-            this.selectedCategory = this.categoryList[0]
-        },
-        onTapCategory(category: Category) {
-            this.selectedCategory = category
-        },
-        handleTouchStart(event: TouchEvent) {
-            this.touchStartX = event.touches[0].clientX
-        },
-        handleTouchMove(event: TouchEvent) {
-            this.touchEndX = event.touches[0].clientX
-        },
-        handleTouchEnd() {
-            this.showSwipeIcon = false
-            if (this.touchStartX - this.touchEndX > 50) {
-                // left swipe
-                this.moveToNextCategory()
-            } else if (this.touchEndX - this.touchStartX > 50) {
-                // right swipe
-                this.moveToPreviousCategory()
-            }
-        },
-        moveToNextCategory() {
-            const currentIndex = this.categoryList.findIndex((category) => category.id === this.selectedCategory?.id)
-            if (currentIndex < this.categoryList.length - 1) {
-                this.selectedCategory = this.categoryList[currentIndex + 1]
-            } else {
-                this.selectedCategory = this.categoryList[0] // 마지막에서 첫 번째로 돌아가기
-            }
-        },
-        moveToPreviousCategory() {
-            const currentIndex = this.categoryList.findIndex((category) => category.id === this.selectedCategory?.id)
-            if (currentIndex > 0) {
-                this.selectedCategory = this.categoryList[currentIndex - 1]
-            } else {
-                this.selectedCategory = this.categoryList[this.categoryList.length - 1] // 첫 번째에서 마지막으로 돌아가기
-            }
-        },
-        handleFooter() {
-            this.showFooter = window.scrollY > 100
-        }
+// 전체 데이터
+const allStations = SubwayUtil.getSubwayList()
+// 지역 목록
+const regionList = ["서울", "부산", "대구", "대전", "광주"]
+
+// 상태
+const selectedRegions = ref<string>(regionList[0])
+const lineColors: Record<string, string> = {
+    "1호선": "#0052A4",
+    "2호선": "#009D3E",
+    "3호선": "#EF7C1C",
+    "4호선": "#00A5DE",
+    "5호선": "#996CAC",
+    "6호선": "#CD7C2F",
+    "7호선": "#747F00",
+    "8호선": "#E6186C",
+    "9호선": "#BB8336"
+}
+
+// 필터 라인 계산
+const availableLines = computed<string[]>(() => {
+    const set = new Set<string>()
+    allStations.filter((st) => st.region === selectedRegions.value).forEach((st) => set.add(st.line))
+    return Array.from(set).sort()
+})
+const selectedLines = ref<string[]>([...availableLines.value])
+watch(selectedRegions, () => {
+    selectedLines.value = selectedLines.value.filter((l) => availableLines.value.includes(l))
+})
+
+// 드로어 제어
+const isDrawerOpen = ref(false)
+function toggleDrawer() {
+    isDrawerOpen.value = !isDrawerOpen.value
+}
+function closeDrawer() {
+    isDrawerOpen.value = false
+}
+function toggleRegion(r: string) {
+    if (selectedRegions.value === r) {
+        selectedRegions.value = regionList[0]
+        selectedLines.value = [...availableLines.value]
+    } else {
+        selectedRegions.value = r
+        selectedLines.value = [...availableLines.value]
     }
+}
+function toggleLine(l: string) {
+    const i = selectedLines.value.indexOf(l)
+    i > -1 ? selectedLines.value.splice(i, 1) : selectedLines.value.push(l)
+}
+function resetFilters() {
+    selectedLines.value = [...availableLines.value]
+}
+function applyFilters() {
+    closeDrawer()
+}
+
+// 셔플 기능
+function shuffleArray<T>(arr: T[]): T[] {
+    const a = arr.slice()
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+}
+const filteredStations = computed(() => shuffleArray(allStations.filter((st) => st.region === selectedRegions.value && selectedLines.value.includes(st.line))))
+
+// 슬롯 머신 로직
+const containerRef = ref<HTMLDivElement | null>(null)
+const reelRef = ref<HTMLUListElement | null>(null)
+const spinning = ref(false)
+const selectedStation = ref<SubwayStation | null>(null)
+const REPEAT = 6
+const reelStations = computed<SubwayStation[]>(() => {
+    const base = filteredStations.value
+    return Array.from({ length: REPEAT }, () => base).flat()
+})
+
+// 뽑기 히스토리
+const spinHistory = ref<SubwayStation[]>([])
+
+// 랜덤 팁 데이터
+const tips: Record<string, string> = {
+    강남: "맛집이 많은 지역이에요!",
+    홍대입구: "밤 문화가 활발해요!",
+    마들: "조용한 주택가입니다."
+    // 필요하면 더 추가
+}
+
+function spin() {
+    if (spinning.value || filteredStations.value.length === 0) return
+    spinning.value = true
+    selectedStation.value = null
+    const N = filteredStations.value.length
+    const targetIdx = Math.floor(Math.random() * N)
+    const cycles = 5,
+        startIdx = cycles * N
+    const reel = reelRef.value!,
+        first = reel.children[0] as HTMLElement,
+        second = reel.children[1] as HTMLElement
+    const fullHeight = second.offsetTop - first.offsetTop
+    const offset = (containerRef.value!.clientHeight - first.offsetHeight) / 2
+    const startY = startIdx * fullHeight,
+        endY = (startIdx + targetIdx) * fullHeight
+    reel.style.transition = "none"
+    reel.style.transform = `translateY(-${startY - offset}px)`
+    void reel.offsetHeight
+    reel.style.transition = "transform 3s cubic-bezier(0.22,1,0.36,1)"
+    reel.style.transform = `translateY(-${endY - offset}px)`
+    reel.addEventListener(
+        "transitionend",
+        () => {
+            const m = new DOMMatrixReadOnly(getComputedStyle(reel).transform)
+            const movedY = Math.abs(m.m42)
+            const rawIdx = Math.round((movedY + offset) / fullHeight)
+            const idx = rawIdx % N
+            const picked = filteredStations.value[idx]
+            selectedStation.value = picked
+            spinning.value = false
+            // 히스토리에 추가, 최대 5개
+            spinHistory.value.push(picked)
+            if (spinHistory.value.length > 5) spinHistory.value.pop()
+        },
+        { once: true }
+    )
 }
 </script>
 
 <style scoped>
-.category-swipe-area {
-    height: 100%;
+/* 드로어 애니메이션 */
+.drawer-enter-from,
+.drawer-leave-to {
+    transform: translateX(-100%);
+}
+.drawer-enter-to,
+.drawer-leave-from {
+    transform: translateX(0);
+}
+.drawer-enter-active,
+.drawer-leave-active {
+    transition: transform 300ms ease-in-out;
 }
 
-.swipe-icon {
-    pointer-events: none;
-    position: absolute;
-    top: 320px;
-    right: 12px;
-    width: 120px;
-    height: 120px;
-    opacity: 0.7;
-    animation: swipeMove 2s ease-in-out 4 alternate forwards;
-}
-
-@keyframes swipeMove {
-    0% {
-        transform: translateX(0);
-    }
-    50% {
-        transform: translateX(-20px);
-    }
-    100% {
-        transform: translateX(0);
-    }
+ul {
+    will-change: transform;
 }
 </style>

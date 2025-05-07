@@ -1,14 +1,16 @@
-export class Content {
-    id: number
-    title: string
-    description: string
-    imageUrl: string
+export class SubwayStation {
+    name: string
+    line: string
+    region: string
+    transfer: boolean
+    color: string
 
-    constructor(requiredContentInfo: { id: number; title: string; description: string; imageUrl: string }) {
-        const { id, title, description, imageUrl } = requiredContentInfo
-        this.id = id
-        this.title = title
-        this.description = description
-        this.imageUrl = imageUrl
+    constructor(stationInfo: { name: string; line: string; region: string; transfer: boolean; color: string }) {
+        const { name, line, region, transfer, color } = stationInfo
+        this.name = name
+        this.line = line
+        this.region = region
+        this.transfer = transfer
+        this.color = color
     }
 }
