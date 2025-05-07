@@ -245,7 +245,7 @@ function spin() {
             spinning.value = false
             // 히스토리에 추가, 최대 5개
             spinHistory.value.push(picked)
-            if (spinHistory.value.length > 5) spinHistory.value.pop()
+            if (spinHistory.value.length > 5) spinHistory.value.shift()
         },
         { once: true }
     )
