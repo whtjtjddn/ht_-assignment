@@ -7,7 +7,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     const config = useRuntimeConfig()
 
     const firebaseConfig = {
-        apiKey: "AIzaSyCxZ0rE4RJ57QbkVNxvP1JPlQ5Ti3gAtSc",
+        apiKey: config.public.apiKey,
         authDomain: "seoul-subway-roulette.firebaseapp.com",
         projectId: "seoul-subway-roulette",
         storageBucket: "seoul-subway-roulette.firebasestorage.app",
