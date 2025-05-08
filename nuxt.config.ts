@@ -55,6 +55,10 @@ export default defineNuxtConfig({
             ],
             meta: [
                 {
+                    name: "google-adsense-account",
+                    content: "ca-pub-9206452158611873"
+                },
+                {
                     name: "description",
                     content: "세상의 모든 P들 하고싶은건 많지만 계획짜긴 귀찮을때, 지하철 랜덤 여행을 같이 떠나보아요"
                 },
