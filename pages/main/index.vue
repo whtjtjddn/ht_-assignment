@@ -73,7 +73,7 @@
                     <li
                         v-for="(station, i) in reelStations"
                         :key="i"
-                        class="h-16 rounded-lg flex items-center justify-center font-semibold shadow-md"
+                        class="h-16 flex items-center justify-center font-semibold shadow-md"
                         :style="{ backgroundColor: station.color, color: '#ffffff' }"
                     >
                         {{ station.name }}
