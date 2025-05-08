@@ -31,7 +31,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
         public: {
             openaiApiKey: process.env.NUXT_OPENAI_API_KEY,
-            apiKey: process.env.FIREBASE_API_KEY
+            apiKey: process.env.NUXT_FIREBASE_API_KEY
         }
     },
     routeRules: {
