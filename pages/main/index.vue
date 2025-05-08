@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen flex bg-gray-900 relative">
+    <div class="min-h-screen flex bg-gray-900 relative width__fill">
         <!-- 드로어 -->
         <transition name="drawer">
             <aside v-if="isDrawerOpen" class="fixed inset-y-0 left-0 w-72 bg-white p-6 shadow-2xl space-y-8 z-50 flex flex-col">
@@ -50,7 +50,7 @@
         </transition>
 
         <!-- 메인 슬롯 머신 -->
-        <div class="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
+        <div class="flex-1 flex flex-col items-center justify-center p-6 space-y-4 width__fill">
             <h1 class="text-2xl font-extrabold text-gray-200">🎰 랜덤 지하철 여행 🎰</h1>
 
             <!-- 최근 뽑은 역 히스토리 -->
@@ -84,7 +84,7 @@
 
             <!-- 뽑기 버튼 -->
             <button
-                :disabled="spinning || filteredStations.length === 0"
+                :disabled="spinning || filteredStations.length === 0 || isAIGenerating"
                 class="w-64 py-3 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold rounded-lg shadow-lg transition-colors disabled:opacity-50"
                 @click="spin"
             >
@@ -92,11 +92,18 @@
             </button>
 
             <!-- 결과 및 팁 -->
-            <div class="space-y-2 text-center">
+            <div class="space-y-2 width__fill">
                 <p v-if="filteredStations.length === 0" class="text-red-500">⚠️ 하나 이상의 지역·호선을 선택해주세요.</p>
-                <p v-if="selectedStation" class="text-lg font-bold" :style="{ color: selectedStation.color }">🎉 선택된 역: {{ selectedStation.name }}</p>
+                <p v-if="selectedStation" class="text-md font-bold text-center" :style="{ color: selectedStation.color }">🎉 선택된 역: {{ selectedStation.name }}</p>
                 <!-- 랜덤 팁 박스 -->
-                <div v-if="selectedStation && tips[selectedStation.name]" class="mt-2 p-2 bg-white rounded-md shadow-inner">💡 {{ tips[selectedStation.name] }}</div>
+                <div v-if="tips" class="mt-2 p-4 bg-white rounded-md shadow-inner flex width__fill mt-5">
+                    <!-- force left-alignment -->
+                    <div class="markdown-body text-left" v-html="renderedTips"></div>
+                </div>
+                <div v-if="isAIGenerating" class="flex flex-row gap-2 justify-center">
+                    <span class="text-white text-lg">{{ "역에 대한 정보를 불러오는 중입니다" }}</span>
+                    <div id="spinner" />
+                </div>
             </div>
         </div>
 
@@ -118,9 +125,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue"
+import { computed, ref, watch } from "vue"
 import SubwayUtil from "../../utils/content"
 import { SubwayStation } from "../../models/content"
+import useOpenai from "../../composables/useOpenai"
+import MarkdownIt from "markdown-it"
+import "github-markdown-css/github-markdown-light.css"
 
 // 전체 데이터
 const allStations = SubwayUtil.getSubwayList()
@@ -204,14 +214,13 @@ const reelStations = computed<SubwayStation[]>(() => {
 
 // 뽑기 히스토리
 const spinHistory = ref<SubwayStation[]>([])
+const tips = ref<string>("")
 
-// 랜덤 팁 데이터
-const tips: Record<string, string> = {
-    강남: "맛집이 많은 지역이에요!",
-    홍대입구: "밤 문화가 활발해요!",
-    마들: "조용한 주택가입니다."
-    // 필요하면 더 추가
-}
+const md = new MarkdownIt()
+
+const renderedTips = computed(() => md.render(tips.value))
+
+const isAIGenerating = ref(false)
 
 function spin() {
     if (spinning.value || filteredStations.value.length === 0) return
@@ -235,7 +244,7 @@ function spin() {
     reel.style.transform = `translateY(-${endY - offset}px)`
     reel.addEventListener(
         "transitionend",
-        () => {
+        async () => {
             const m = new DOMMatrixReadOnly(getComputedStyle(reel).transform)
             const movedY = Math.abs(m.m42)
             const rawIdx = Math.round((movedY + offset) / fullHeight)
@@ -246,6 +255,18 @@ function spin() {
             // 히스토리에 추가, 최대 5개
             spinHistory.value.push(picked)
             if (spinHistory.value.length > 5) spinHistory.value.shift()
+
+            try {
+                // OpenAI API 호출
+                const { getAIResponse } = useOpenai()
+                isAIGenerating.value = true
+                tips.value = await getAIResponse(selectedRegions.value, picked.name)
+                isAIGenerating.value = false
+            } catch (error) {
+                console.error("OpenAI API 호출 중 오류 발생:", error)
+            } finally {
+                isAIGenerating.value = false
+            }
         },
         { once: true }
     )
@@ -269,5 +290,27 @@ function spin() {
 
 ul {
     will-change: transform;
+}
+
+.width__fill {
+    width: -webkit-fill-available;
+}
+
+#spinner {
+    width: 24px;
+    height: 24px;
+    border: 4px solid transparent;
+    border-top: 4px solid yellow;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

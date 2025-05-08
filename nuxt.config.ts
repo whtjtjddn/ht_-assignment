@@ -28,19 +28,21 @@ export default defineNuxtConfig({
             }
         }
     },
-
+    runtimeConfig: {
+        public: {
+            openaiApiKey: process.env.NUXT_OPENAI_API_KEY,
+            apiKey: process.env.FIREBASE_API_KEY
+        }
+    },
     routeRules: {
         "/": {
             redirect: "/main"
         }
     },
-
     typescript: {
         typeCheck: false
     },
-
     modules: ["@pinia/nuxt", "@pinia-plugin-persistedstate/nuxt", "@nuxtjs/tailwindcss"],
-
     app: {
         head: {
             charset: "utf-8",
