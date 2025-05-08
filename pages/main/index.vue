@@ -1,18 +1,16 @@
 <template>
     <div class="min-h-screen flex bg-gray-900 relative width__fill">
-        <!-- 드로어 -->
+        <!-- 드로어 (필터) -->
         <transition name="drawer">
             <aside v-if="isDrawerOpen" class="fixed inset-y-0 left-0 w-72 bg-white p-6 shadow-2xl space-y-8 z-50 flex flex-col">
                 <h2 class="text-2xl font-bold">🛠 필터</h2>
-
-                <!-- 지역 필터 -->
                 <div>
                     <h3 class="text-lg font-semibold mb-2">지역</h3>
                     <div class="flex flex-wrap gap-2">
                         <button
                             v-for="region in regionList"
                             :key="region"
-                            :class="selectedRegions.includes(region) ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'"
+                            :class="selectedRegion === region ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'"
                             class="px-4 py-2 rounded-full transition"
                             @click="toggleRegion(region)"
                         >
@@ -20,8 +18,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- 호선 필터 -->
                 <div>
                     <h3 class="text-lg font-semibold mb-2">호선</h3>
                     <div class="flex flex-wrap gap-2">
@@ -40,8 +36,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- 초기화 / 적용 -->
                 <div class="mt-auto flex justify-between pt-4 border-t">
                     <button class="text-sm text-red-500 hover:underline" @click="resetFilters">초기화</button>
                     <button class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition" @click="applyFilters">적용</button>
@@ -49,66 +43,64 @@
             </aside>
         </transition>
 
-        <!-- 메인 슬롯 머신 -->
+        <!-- 메인 컨텐츠 -->
         <div class="flex-1 flex flex-col items-center justify-center pt-5 pb-5 space-y-4 width__fill">
             <h1 class="text-2xl font-extrabold text-gray-200">🎰 랜덤 지하철 여행 🎰</h1>
 
             <!-- 최근 뽑은 역 히스토리 -->
             <div v-if="spinHistory.length" class="flex flex-wrap justify-center gap-2">
                 <span v-for="(h, i) in spinHistory" :key="i" class="flex flex-row gap-1 p-2 rounded-lg text-white text-sm" :style="{ backgroundColor: h.color }">
-                    <span class="flex rounded-full w-5 h-5 border-2 border-gray-200 bg-white text-black justify-center items-center">{{ h.line.substring(0, 1) }}</span>
+                    <span class="flex rounded-full w-5 h-5 border-2 border-gray-200 bg-white text-black justify-center items-center">
+                        {{ h.line.substring(0, 1) }}
+                    </span>
                     {{ h.name }}
                 </span>
             </div>
 
-            <!-- 슬롯창 배경 이미지 + 회전 영역 -->
-            <div
-                ref="containerRef"
-                class="relative overflow-hidden h-16 w-64 rounded-lg"
-                :style="{
-                    border: `1.5px solid #f7f8f9`
-                }"
-            >
-                <ul ref="reelRef" class="relative rounded-lg will-change-transform">
-                    <li
-                        v-for="(station, i) in reelStations"
-                        :key="i"
-                        class="h-16 flex items-center justify-center font-semibold shadow-md"
-                        :style="{ backgroundColor: station.color, color: '#ffffff' }"
-                    >
-                        {{ station.name }}
-                    </li>
-                </ul>
-                <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 pointer-events-none"></div>
-            </div>
+            <!-- 카드 영역 -->
+            <transition name="card-expand" mode="out-in" @after-enter="onCardExpand">
+                <div v-if="displayCard" ref="cardContainerRef" class="card-container" :class="{ shrink: isShrinking }">
+                    <div class="flip-card" :class="{ flipped }">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front flex items-center justify-center" :style="{ backgroundColor: selectedStation?.color }">
+                                <h2 class="text-2xl font-bold">{{ selectedStation?.name }}</h2>
+                            </div>
+                            <div ref="backRef" class="flip-card-back markdown-body p-4 overflow-auto relative">
+                                <div v-if="isAIGenerating" class="spinner-wrapper">
+                                    <div id="spinner" />
+                                </div>
+                                <div v-else v-html="renderedTips"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- 슬롯 머신 -->
+            <transition name="slot-fade">
+                <div v-if="!displayCard" ref="containerRef" class="relative overflow-hidden h-16 w-64 rounded-lg slot-container" :style="{ border: '1.5px solid #f7f8f9' }">
+                    <ul ref="reelRef" class="relative will-change-transform">
+                        <li
+                            v-for="(station, i) in reelStations"
+                            :key="i"
+                            class="h-16 flex items-center justify-center font-semibold shadow-md"
+                            :style="{ backgroundColor: station.color, color: '#ffffff' }"
+                        >
+                            {{ station.name }}
+                        </li>
+                    </ul>
+                    <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-16 pointer-events-none"></div>
+                </div>
+            </transition>
 
             <!-- 뽑기 버튼 -->
             <button
-                :disabled="spinning || filteredStations.length === 0 || isAIGenerating"
+                :disabled="spinning"
                 class="w-64 py-3 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold rounded-lg shadow-lg transition-colors disabled:opacity-50"
                 @click="spin"
             >
-                {{ spinning ? "돌리는 중…" : "오늘은 어디로 가볼까요?" }}
+                {{ spinning ? "돌리는 중…" : displayCard ? "다시 돌리기" : "오늘은 어디로 가볼까요?" }}
             </button>
-
-            <!-- 결과 및 팁 -->
-            <div class="space-y-2 width__fill flex flex-col justify-center items-center">
-                <p v-if="filteredStations.length === 0" class="text-red-500">⚠️ 하나 이상의 지역·호선을 선택해주세요.</p>
-                <!-- 랜덤 팁 박스 -->
-                <div
-                    v-if="tips && !isAIGenerating"
-                    class="p-4 bg-white rounded-md shadow-inner flex mt-5"
-                    :style="{
-                        maxWidth: '90%'
-                    }"
-                >
-                    <div class="markdown-body text-left" style="max-width: 600px; width: 100%; margin: 0 auto" v-html="renderedTips" />
-                </div>
-                <div v-if="isAIGenerating" class="flex flex-row gap-2 justify-center">
-                    <span class="text-white text-lg">{{ "역에 대한 정보를 불러오는 중입니다" }}</span>
-                    <div id="spinner" />
-                </div>
-            </div>
         </div>
 
         <!-- 플로팅 버튼 -->
@@ -129,20 +121,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue"
+import { ref, computed, watch, nextTick } from "vue"
 import SubwayUtil from "../../utils/content"
-import { SubwayStation } from "../../models/content"
 import useOpenai from "../../composables/useOpenai"
 import MarkdownIt from "markdown-it"
 import "github-markdown-css/github-markdown-light.css"
 
-// 전체 데이터
 const allStations = SubwayUtil.getSubwayList()
-// 지역 목록
 const regionList = ["서울", "부산", "대구", "대전", "광주"]
+const selectedRegion = ref(regionList[0])
+const availableLines = computed(() => {
+    const set = new Set<string>()
+    allStations.filter((st) => st.region === selectedRegion.value).forEach((st) => set.add(st.line))
+    return Array.from(set).sort()
+})
+const selectedLines = ref([...availableLines.value])
+watch(selectedRegion, () => {
+    selectedLines.value = [...availableLines.value]
+})
 
-// 상태
-const selectedRegions = ref<string>(regionList[0])
 const lineColors: Record<string, string> = {
     "1호선": "#0052A4",
     "2호선": "#009D3E",
@@ -155,46 +152,34 @@ const lineColors: Record<string, string> = {
     "9호선": "#BB8336"
 }
 
-// 필터 라인 계산
-const availableLines = computed<string[]>(() => {
-    const set = new Set<string>()
-    allStations.filter((st) => st.region === selectedRegions.value).forEach((st) => set.add(st.line))
-    return Array.from(set).sort()
-})
-const selectedLines = ref<string[]>([...availableLines.value])
-watch(selectedRegions, () => {
-    selectedLines.value = selectedLines.value.filter((l) => availableLines.value.includes(l))
-})
-
-// 드로어 제어
-const isDrawerOpen = ref(false)
-function toggleDrawer() {
-    isDrawerOpen.value = !isDrawerOpen.value
-}
-function closeDrawer() {
-    isDrawerOpen.value = false
-}
 function toggleRegion(r: string) {
-    if (selectedRegions.value === r) {
-        selectedRegions.value = regionList[0]
-        selectedLines.value = [...availableLines.value]
-    } else {
-        selectedRegions.value = r
-        selectedLines.value = [...availableLines.value]
-    }
+    selectedRegion.value = selectedRegion.value === r ? regionList[0] : r
 }
 function toggleLine(l: string) {
-    const i = selectedLines.value.indexOf(l)
-    i > -1 ? selectedLines.value.splice(i, 1) : selectedLines.value.push(l)
+    const idx = selectedLines.value.indexOf(l)
+    idx > -1 ? selectedLines.value.splice(idx, 1) : selectedLines.value.push(l)
 }
 function resetFilters() {
     selectedLines.value = [...availableLines.value]
 }
 function applyFilters() {
-    closeDrawer()
+    isDrawerOpen.value = false
 }
 
-// 셔플 기능
+const isDrawerOpen = ref(false)
+function toggleDrawer() {
+    isDrawerOpen.value = !isDrawerOpen.value
+}
+
+const spinning = ref(false)
+const displayCard = ref(false)
+const flipped = ref(false)
+const isShrinking = ref(false)
+const selectedStation = ref<any>(null)
+const spinHistory = ref<any[]>([])
+const cardContainerRef = ref<HTMLElement | null>(null)
+const backRef = ref<HTMLDivElement | null>(null)
+
 function shuffleArray<T>(arr: T[]): T[] {
     const a = arr.slice()
     for (let i = a.length - 1; i > 0; i--) {
@@ -203,71 +188,63 @@ function shuffleArray<T>(arr: T[]): T[] {
     }
     return a
 }
-const filteredStations = computed(() => shuffleArray(allStations.filter((st) => st.region === selectedRegions.value && selectedLines.value.includes(st.line))))
 
-// 슬롯 머신 로직
-const containerRef = ref<HTMLDivElement | null>(null)
-const reelRef = ref<HTMLUListElement | null>(null)
-const spinning = ref(false)
-const selectedStation = ref<SubwayStation | null>(null)
+const filteredStations = computed(() => shuffleArray(allStations.filter((st) => st.region === selectedRegion.value && selectedLines.value.includes(st.line))))
 const REPEAT = 6
-const reelStations = computed<SubwayStation[]>(() => {
-    const base = filteredStations.value
-    return Array.from({ length: REPEAT }, () => base).flat()
-})
-
-// 뽑기 히스토리
-const spinHistory = ref<SubwayStation[]>([])
-const tips = ref<string>("")
+const reelStations = computed(() => Array.from({ length: REPEAT }, () => filteredStations.value).flat())
 
 const md = new MarkdownIt()
-
+const tips = ref<string>("")
 const renderedTips = computed(() => md.render(tips.value))
+const isAIGenerating = ref<boolean>(false)
 
-const isAIGenerating = ref(false)
+watch(isAIGenerating, async (val) => {
+    if (val === false) {
+        await nextTick()
+        if (backRef.value) backRef.value.scrollTop = 0
+    }
+})
 
-function spin() {
-    if (spinning.value || filteredStations.value.length === 0) return
+const containerRef = ref<HTMLDivElement | null>(null)
+const reelRef = ref<HTMLUListElement | null>(null)
+
+async function spinRoulette() {
+    if (!filteredStations.value.length) return
     spinning.value = true
     selectedStation.value = null
+    flipped.value = false
+    tips.value = ""
+
     const N = filteredStations.value.length
     const targetIdx = Math.floor(Math.random() * N)
-    const cycles = 5,
-        startIdx = cycles * N
-    const reel = reelRef.value!,
-        first = reel.children[0] as HTMLElement,
-        second = reel.children[1] as HTMLElement
-    const fullHeight = second.offsetTop - first.offsetTop
+    const startIdx = N * 5
+    const reel = reelRef.value!
+    const first = reel.children[0] as HTMLElement
+    const second = reel.children[1] as HTMLElement
+    const fullH = second.offsetTop - first.offsetTop
     const offset = (containerRef.value!.clientHeight - first.offsetHeight) / 2
-    const startY = startIdx * fullHeight,
-        endY = (startIdx + targetIdx) * fullHeight
+
     reel.style.transition = "none"
-    reel.style.transform = `translateY(-${startY - offset}px)`
+    reel.style.transform = `translateY(-${startIdx * fullH - offset}px)`
     void reel.offsetHeight
-    reel.style.transition = "transform 3s cubic-bezier(0.22,1,0.36,1)"
-    reel.style.transform = `translateY(-${endY - offset}px)`
+    reel.style.transition = "transform 2s cubic-bezier(0.22,1,0.36,1)"
+    reel.style.transform = `translateY(-${(startIdx + targetIdx) * fullH - offset}px)`
+
     reel.addEventListener(
         "transitionend",
         async () => {
-            const m = new DOMMatrixReadOnly(getComputedStyle(reel).transform)
-            const movedY = Math.abs(m.m42)
-            const rawIdx = Math.round((movedY + offset) / fullHeight)
-            const idx = rawIdx % N
-            const picked = filteredStations.value[idx]
-            selectedStation.value = picked
             spinning.value = false
-            // 히스토리에 추가, 최대 5개
+            const picked = filteredStations.value[targetIdx]
+            selectedStation.value = picked
             spinHistory.value.push(picked)
             if (spinHistory.value.length > 5) spinHistory.value.shift()
-
+            displayCard.value = true
             try {
-                // OpenAI API 호출
-                const { getAIResponse } = useOpenai()
                 isAIGenerating.value = true
-                tips.value = await getAIResponse(selectedRegions.value, picked.name)
-                isAIGenerating.value = false
-            } catch (error) {
-                console.error("OpenAI API 호출 중 오류 발생:", error)
+                const { getAIResponse } = useOpenai()
+                tips.value = await getAIResponse(selectedRegion.value, picked.name)
+            } catch (e) {
+                console.error(e)
             } finally {
                 isAIGenerating.value = false
             }
@@ -275,10 +252,33 @@ function spin() {
         { once: true }
     )
 }
+
+function spin() {
+    if (displayCard.value) {
+        isShrinking.value = true
+        const el = cardContainerRef.value!
+        const onEnd = (e: TransitionEvent) => {
+            if (e.propertyName !== "transform") return
+            el.removeEventListener("transitionend", onEnd)
+            flipped.value = false
+            setTimeout(() => {
+                displayCard.value = false
+                isShrinking.value = false
+                spinRoulette()
+            }, 600)
+        }
+        el.addEventListener("transitionend", onEnd, { once: true })
+    } else {
+        spinRoulette()
+    }
+}
+
+function onCardExpand() {
+    flipped.value = true
+}
 </script>
 
 <style scoped>
-/* 드로어 애니메이션 */
 .drawer-enter-from,
 .drawer-leave-to {
     transform: translateX(-100%);
@@ -292,29 +292,123 @@ function spin() {
     transition: transform 300ms ease-in-out;
 }
 
-ul {
-    will-change: transform;
+.slot-fade-enter-from,
+.slot-fade-leave-to {
+    opacity: 0;
+}
+.slot-fade-enter-to,
+.slot-fade-leave-from {
+    opacity: 1;
+}
+.slot-fade-enter-active,
+.slot-fade-leave-active {
+    transition: opacity 200ms ease;
 }
 
-.width__fill {
-    width: -webkit-fill-available;
+.card-expand-enter-from,
+.card-expand-leave-to {
+    transform: scale(0.5);
+    opacity: 0;
+}
+.card-expand-enter-to,
+.card-expand-leave-from {
+    transform: scale(1);
+    opacity: 1;
+}
+.card-expand-enter-active {
+    transition:
+        transform 400ms ease-in-out,
+        opacity 400ms ease-in-out;
+    transform-origin: center;
+}
+.card-expand-leave-active {
+    transition:
+        transform 300ms ease-in-out,
+        opacity 300ms ease-in-out;
+    transform-origin: center;
 }
 
+.card-container {
+    width: 90%;
+    max-width: 600px;
+    height: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.card-container.shrink {
+    transition:
+        transform 300ms ease-in-out,
+        opacity 300ms ease-in-out;
+    transform: scale(0.5);
+    opacity: 0;
+    transform-origin: center;
+}
+
+.flip-card {
+    perspective: 1000px;
+    width: 100%;
+    height: 100%;
+}
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 600ms ease-in-out;
+}
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.flip-card-front {
+    color: #fff;
+}
+.flip-card-back {
+    transform: rotateY(180deg);
+    background: #f9f9f9;
+    color: #333;
+    padding: 1rem;
+    overflow: auto;
+}
+
+.spinner-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
 #spinner {
-    width: 24px;
-    height: 24px;
-    border: 4px solid transparent;
-    border-top: 4px solid yellow;
+    width: 48px;
+    height: 48px;
+    border: 6px solid transparent;
+    border-top: 6px solid #f5c518;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
-
 @keyframes spin {
     0% {
-        transform: rotate(0deg);
+        transform: rotate(0);
     }
     100% {
         transform: rotate(360deg);
     }
+}
+
+ul {
+    will-change: transform;
+}
+.width__fill {
+    width: -webkit-fill-available;
 }
 </style>
