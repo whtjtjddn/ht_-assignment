@@ -136,10 +136,9 @@ import { SubwayStation } from "../../models/content"
 import useOpenai from "../../composables/useOpenai"
 import MarkdownIt from "markdown-it"
 import "github-markdown-css/github-markdown-light.css"
-import { defineRouteRules } from "nuxt/dist/pages/runtime"
 
-defineRouteRules({
-    prerender: true // this page becomes a static HTML file
+definePageMeta({
+    prerender: true
 })
 
 useHead({
