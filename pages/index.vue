@@ -165,7 +165,13 @@ useHead({
             content: "세상의 모든 P들 하고싶은건 많지만 계획짜긴 귀찮을때, 지하철 랜덤 여행을 같이 떠나보아요"
         }
     ],
-    link: [{ rel: "canonical", href: "https://subway-roulette.store/main" }]
+    link: [{ rel: "canonical", href: "https://subway-roulette.store" }],
+    script: [
+        {
+            src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9206452158611873",
+            crossorigin: "anonymous"
+        }
+    ]
 })
 
 // 전체 데이터
