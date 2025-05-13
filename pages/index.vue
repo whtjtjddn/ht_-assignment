@@ -131,9 +131,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
 import { useHead } from "nuxt/app"
-import SubwayUtil from "../../utils/content"
-import { SubwayStation } from "../../models/content"
-import useOpenai from "../../composables/useOpenai"
+import SubwayUtil from "../utils/content"
+import { SubwayStation } from "../models/content"
+import useOpenai from "../composables/useOpenai"
 import MarkdownIt from "markdown-it"
 import "github-markdown-css/github-markdown-light.css"
 

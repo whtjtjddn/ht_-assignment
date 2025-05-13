@@ -42,11 +42,6 @@ export default defineNuxtConfig({
             apiKey: process.env.NUXT_FIREBASE_API_KEY
         }
     },
-    routeRules: {
-        "/": {
-            redirect: "/main"
-        }
-    },
     typescript: {
         typeCheck: false
     },
