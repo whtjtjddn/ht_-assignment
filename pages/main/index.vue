@@ -65,11 +65,18 @@
                             <div class="flip-card-front flex items-center justify-center" :style="{ backgroundColor: selectedStation?.color }">
                                 <h2 class="text-2xl font-bold">{{ selectedStation?.name }}</h2>
                             </div>
-                            <div ref="backRef" class="flip-card-back markdown-body p-4 overflow-auto relative">
+                            <div ref="backRef" class="flip-card-back markdown-body p-4 relative">
                                 <div v-if="isAIGenerating" class="spinner-wrapper">
                                     <div id="spinner" />
                                 </div>
-                                <div v-else v-html="renderedTips"></div>
+                                <div
+                                    v-else
+                                    :style="{
+                                        maxWidth: '100%',
+                                        maxHeight: '100%'
+                                    }"
+                                    v-html="renderedTips"
+                                ></div>
                             </div>
                         </div>
                     </div>
@@ -95,7 +102,7 @@
 
             <!-- 뽑기 버튼 -->
             <button
-                :disabled="spinning"
+                :disabled="spinning || isAIGenerating"
                 class="w-64 py-3 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold rounded-lg shadow-lg transition-colors disabled:opacity-50"
                 @click="spin"
             >
@@ -255,19 +262,12 @@ async function spinRoulette() {
 
 function spin() {
     if (displayCard.value) {
+        flipped.value = false
         isShrinking.value = true
-        const el = cardContainerRef.value!
-        const onEnd = (e: TransitionEvent) => {
-            if (e.propertyName !== "transform") return
-            el.removeEventListener("transitionend", onEnd)
-            flipped.value = false
-            setTimeout(() => {
-                displayCard.value = false
-                isShrinking.value = false
-                spinRoulette()
-            }, 600)
-        }
-        el.addEventListener("transitionend", onEnd, { once: true })
+        setTimeout(() => {
+            displayCard.value = false
+            isShrinking.value = false
+        }, 600)
     } else {
         spinRoulette()
     }
@@ -331,7 +331,7 @@ function onCardExpand() {
 .card-container {
     width: 90%;
     max-width: 600px;
-    height: 800px;
+    height: 700px;
     display: flex;
     align-items: center;
     justify-content: center;
