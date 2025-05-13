@@ -4,6 +4,7 @@ import path from "path"
 
 export default defineNuxtConfig({
     devtools: { enabled: true },
+    ssr: true,
     nitro: {
         preset: "firebase",
         firebase: {
