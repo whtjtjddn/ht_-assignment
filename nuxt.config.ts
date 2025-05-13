@@ -20,7 +20,7 @@ export default defineNuxtConfig({
             // Crawl links and pre-render them:
             crawlLinks: true,
             // Always include pages not linked anywhere:
-            routes: ["/main"],
+            routes: ["/"],
             // Skip truly dynamic pages you don’t want static:
             ignore: ["/api/**"]
         }
