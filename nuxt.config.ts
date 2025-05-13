@@ -14,6 +14,14 @@ export default defineNuxtConfig({
                 region: "asia-northeast3",
                 memory: "1GiB"
             }
+        },
+        prerender: {
+            // Crawl links and pre-render them:
+            crawlLinks: true,
+            // Always include pages not linked anywhere:
+            routes: ["/main"],
+            // Skip truly dynamic pages you don’t want static:
+            ignore: ["/api/**"]
         }
     },
     vite: {
