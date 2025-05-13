@@ -4,6 +4,7 @@ import path from "path"
 
 export default defineNuxtConfig({
     devtools: { enabled: true },
+    ssr: true,
     nitro: {
         preset: "firebase",
         firebase: {
@@ -14,6 +15,14 @@ export default defineNuxtConfig({
                 region: "asia-northeast3",
                 memory: "1GiB"
             }
+        },
+        prerender: {
+            // Crawl links and pre-render them:
+            crawlLinks: true,
+            // Always include pages not linked anywhere:
+            routes: ["/"],
+            // Skip truly dynamic pages you don’t want static:
+            ignore: ["/api/**"]
         }
     },
     vite: {
@@ -34,11 +43,6 @@ export default defineNuxtConfig({
             apiKey: process.env.NUXT_FIREBASE_API_KEY
         }
     },
-    routeRules: {
-        "/": {
-            redirect: "/main"
-        }
-    },
     typescript: {
         typeCheck: false
     },
@@ -53,7 +57,8 @@ export default defineNuxtConfig({
                     rel: "icon",
                     type: "image/x-icon",
                     href: "/favicon.ico"
-                }
+                },
+                { rel: "canonical", href: "https://subway-roulette.store" }
             ],
             meta: [
                 {
@@ -75,6 +80,12 @@ export default defineNuxtConfig({
                 {
                     name: "og:description",
                     content: "세상의 모든 P들 하고싶은건 많지만 계획짜긴 귀찮을때, 지하철 랜덤 여행을 같이 떠나보아요"
+                }
+            ],
+            script: [
+                {
+                    src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9206452158611873",
+                    crossorigin: "anonymous"
                 }
             ]
         }
