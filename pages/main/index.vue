@@ -164,7 +164,8 @@ useHead({
             name: "og:description",
             content: "세상의 모든 P들 하고싶은건 많지만 계획짜긴 귀찮을때, 지하철 랜덤 여행을 같이 떠나보아요"
         }
-    ]
+    ],
+    link: [{ rel: "canonical", href: "https://subway-roulette.store/main" }]
 })
 
 // 전체 데이터
